@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}My Sessions - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="sessions-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>My Sessions</h1>
+        </div>
+
+        <div class="sessions-list">
+            {% for session in sessions %}
+            <div class="session-card {% if session.is_active %}active{% endif %}">
+                <div class="session-users">
+                    <span class="user-avatar">{{ session.user1.name|slice:":1"|upper }}</span>
+                    <span class="session-connector">↔</span>
+                    <span class="user-avatar">{{ session.user2.name|slice:":1"|upper }}</span>
+                </div>
+
+                <div class="session-info">
+                    <h3>
+                        {% if session.user1 == user %}
+                        Session with {{ session.user2.name }}
+                        {% else %}
+                        Session with {{ session.user1.name }}
+                        {% endif %}
+                    </h3>
+                    <div class="session-meta">
+                        <span class="session-date">{{ session.start_time|date:"M d, Y" }}</span>
+                        {% if session.is_active %}
+                        <span class="status-badge active">Active</span>
+                        {% else %}
+                        <span class="status-badge ended">Completed</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="session-actions">
+                    {% if session.is_active %}
+                    <a href="{% url 'session' session.id %}" class="btn btn-primary">Continue</a>
+                    {% else %}
+                    <a href="{% url 'session_review' session.id %}" class="btn btn-outline">Review</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <h3>No sessions yet</h3>
+                <p>Start learning by browsing requests or creating your own.</p>
+                <a href="{% url 'all_requests' %}" class="btn btn-primary">Browse Requests</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

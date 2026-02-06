@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Skills - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="skills-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>Popular Skills</h1>
+        </div>
+
+        <div class="skills-grid">
+            {% for skill in skills %}
+            <div class="skill-card">
+                <h3>{{ skill.name }}</h3>
+                {% if skill.description %}
+                <p>{{ skill.description }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state full-width">
+                <p>No skills have been added yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

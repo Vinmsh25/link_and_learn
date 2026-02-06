@@ -1,0 +1,12 @@
+# Django Framework
+Django>=4.2,<5.0
+
+# Django Channels (WebSocket support)
+channels>=4.0
+daphne>=4.0
+
+# Channels layer (for production, use redis)
+# channels-redis>=4.0  # Uncomment for production with Redis
+
+# Development utilities
+# django-debug-toolbar>=4.0  # Uncomment for debugging

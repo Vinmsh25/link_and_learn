@@ -1,0 +1,51 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Rate Session - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="review-page">
+    <div class="container container-sm">
+        <div class="form-card">
+            <div class="form-header">
+                <h1>Rate Your Session</h1>
+                <p>How was your experience with {{ partner.name }}?</p>
+            </div>
+
+            <div class="session-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Partner</span>
+                    <span class="summary-value">{{ partner.name }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Duration</span>
+                    <span class="summary-value">{{ session.total_duration|floatformat:0 }} seconds</span>
+                </div>
+            </div>
+
+            <form method="post" class="review-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Rating</label>
+                    <div class="star-rating">
+                        {% for i in "12345" %}
+                        <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" {% if i == "5" %}checked{% endif %}>
+                        <label for="star{{ i }}" class="star-label">★</label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_comment" class="form-label">Comment (Optional)</label>
+                    {{ form.comment }}
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline">Skip</a>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

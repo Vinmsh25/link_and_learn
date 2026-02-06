@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Credit History - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="credit-history-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>Credit History</h1>
+            <span class="current-balance">Current Balance: <strong>{{ user.credits|floatformat:1 }}</strong>
+                credits</span>
+        </div>
+
+        <div class="transactions-list">
+            {% for tx in transactions %}
+            <div class="transaction-card {% if tx.amount > 0 %}positive{% else %}negative{% endif %}">
+                <div class="tx-icon">
+                    {% if tx.transaction_type == 'TEACHING' %}📚
+                    {% elif tx.transaction_type == 'LEARNING' %}🎓
+                    {% elif tx.transaction_type == 'SIGNUP' %}🎁
+                    {% elif tx.transaction_type == 'SUPPORT' %}🏦
+                    {% elif tx.transaction_type == 'DONATION' %}❤️
+                    {% else %}💰{% endif %}
+                </div>
+                <div class="tx-info">
+                    <span class="tx-type">{{ tx.get_transaction_type_display }}</span>
+                    <span class="tx-date">{{ tx.created_at|naturaltime }}</span>
+                    {% if tx.description %}
+                    <span class="tx-description">{{ tx.description }}</span>
+                    {% endif %}
+                </div>
+                <div class="tx-amount">
+                    {% if tx.amount > 0 %}+{% endif %}{{ tx.amount|floatformat:1 }}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <p>No transactions yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

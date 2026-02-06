@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Requests - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="browse-page">
+    <div class="container">
+
+        <!-- Profile Search (Top Right or Separate) -->
+
+
+        <div class="page-header">
+            <h1>Browse Learning Requests</h1>
+        </div>
+
+        <!-- Search & Post Section -->
+        <div class="filter-bar search-post-container">
+            <form action="{% url 'search_and_post' %}" method="post" class="search-post-form">
+                {% csrf_token %}
+                <div class="search-inputs">
+                    <div class="input-group">
+                        <label>I want to learn:</label>
+                        <input type="text" name="topic_to_learn" value="{{ search }}" placeholder="e.g. Django"
+                            class="form-input" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>I can teach:</label>
+                        <input type="text" name="topic_to_teach" value="{{ teach_search }}" placeholder="e.g. Python"
+                            class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="ok_with_just_learning" value="true">
+                        <span>I'm okay with just learning (Bounty)</span>
+                    </label>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Search & Post
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        {% if not is_search %}
+        <!-- Default: Shows Requests -->
+        <div class="results-controls">
+            <h2 class="section-title">All Learning Requests</h2>
+            <form method="get" class="toggle-form">
+                <input type="hidden" name="search" value="{{ search }}">
+                <input type="hidden" name="teach" value="{{ teach_search }}">
+                <label class="toggle-switch">
+                    <input type="checkbox" name="bounty" value="1" {% if bounty_only %}checked{% endif %}
+                        onchange="this.form.submit()">
+                    <span class="slider"></span>
+                    <span class="toggle-label">Show Bounty Only</span>
+                </label>
+            </form>
+        </div>
+
+        <div class="requests-grid">
+            {% for req in requests %}
+            <div class="request-card-lg">
+                <div class="request-header">
+                    <div class="request-user-info">
+                        <span class="user-avatar">{{ req.creator.name|slice:":1"|upper }}</span>
+                        <div class="user-details">
+                            <a href="{% url 'user_profile' req.creator.id %}" class="user-name">
+                                {{ req.creator.name }}
+                            </a>
+                            <div class="user-status">
+                                {% if req.creator.is_online %}
+                                <span class="status-badge online">Online</span>
+                                {% else %}
+                                <span class="status-badge offline">Offline</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <span class="request-time">{{ req.created_at|timesince }} ago</span>
+                </div>
+
+                <div class="request-body">
+                    <h3 class="request-topic">
+                        <span class="label">Wants to learn:</span>
+                        {{ req.topic_to_learn }}
+                    </h3>
+                    {% if req.topic_to_teach %}
+                    <p class="request-exchange">
+                        <span class="label">Can teach:</span>
+                        {{ req.topic_to_teach }}
+                    </p>
+                    {% endif %}
+                    {% if req.ok_with_just_learning %}
+                    <span class="badge-bounty">Bounty</span>
+                    {% endif %}
+                </div>
+
+                <div class="request-footer">
+                    {% if req.creator.average_rating %}
+                    <div class="rating">
+                        <span class="stars">★ {{ req.creator.average_rating|floatformat:1 }}</span>
+                        <span class="count">({{ req.creator.total_reviews }})</span>
+                    </div>
+                    {% endif %}
+                    <div class="request-actions">
+                        <a href="{% url 'direct_chat' req.creator.id %}" class="btn btn-outline">Message</a>
+                        <a href="{% url 'start_session' req.creator.id %}" class="btn btn-primary">Start Session</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state full-width">
+                <h3>No requests found</h3>
+                <p>Be the first to post a request!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Search Results: Show Relevant Profiles -->
+        <div class="results-controls">
+            <h2 class="section-title">Relevant Profiles</h2>
+            <a href="{% url 'all_requests' %}" class="btn-text">Clear Search</a>
+        </div>
+
+        <div class="users-grid">
+            {% for u in found_users %}
+            <div class="user-card">
+                <div class="user-card-header">
+                    <span class="user-avatar-lg">{{ u.name|slice:":1"|upper }}</span>
+                    {% if u.is_online %}
+                    <span class="status-dot online" title="Online"></span>
+                    {% endif %}
+                </div>
+                <div class="user-card-body">
+                    <h3>{{ u.name }}</h3>
+                    <div class="user-stats">
+                        {% if u.average_rating %}
+                        <span>★ {{ u.average_rating|floatformat:1 }}</span>
+                        {% endif %}
+                        <span>{{ u.total_sessions }} sessions</span>
+                    </div>
+                    {% if u.availability %}
+                    <p class="availability-sm">📅 {{ u.availability }}</p>
+                    {% endif %}
+                </div>
+                <div class="user-card-footer">
+                    <a href="{% url 'user_profile' u.id %}" class="btn btn-outline btn-sm">Profile</a>
+                    <a href="{% url 'direct_chat' u.id %}" class="btn btn-primary btn-sm">Message</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state full-width">
+                <h3>No profiles found</h3>
+                <p>Try different keywords.</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .search-post-container {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 2rem;
+    }
+
+    .search-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-options {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .results-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: relative;
+        width: 40px;
+        height: 24px;
+        background-color: #ccc;
+        border-radius: 24px;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        transition: .4s;
+    }
+
+    input:checked+.slider {
+        background-color: var(--primary);
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(16px);
+    }
+
+    @media (max-width: 768px) {
+        .search-inputs {
+            grid-template-columns: 1fr;
+        }
+
+        .form-options {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
+{% endblock %}

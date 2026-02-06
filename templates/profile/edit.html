@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="edit-profile-page">
+    <div class="container container-sm">
+        <div class="form-card">
+            <div class="form-header">
+                <h1>Edit Profile</h1>
+            </div>
+
+            <form method="post" class="main-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_name" class="form-label">Name</label>
+                    {{ form.name }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_availability" class="form-label">Availability</label>
+                    {{ form.availability }}
+                    <span class="form-hint">e.g., "Weekdays 6-9 PM" or "Available on weekends"</span>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'profile' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

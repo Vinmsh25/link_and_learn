@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Bank - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="bank-page">
+    <div class="container">
+        <div class="bank-header">
+            <div class="bank-icon">🏦</div>
+            <h1>The Bank</h1>
+            <p>Supporting the learning community</p>
+        </div>
+
+        <div class="bank-stats">
+            <div class="stat-card bank-balance">
+                <span class="stat-label">Bank Balance</span>
+                <span class="stat-value">{{ bank.total_credits|floatformat:1 }}</span>
+                <span class="stat-sublabel">credits</span>
+            </div>
+            <div class="stat-card your-balance">
+                <span class="stat-label">Your Balance</span>
+                <span class="stat-value">{{ user.credits|floatformat:1 }}</span>
+                <span class="stat-sublabel">credits</span>
+            </div>
+        </div>
+
+        <div class="bank-sections">
+            <!-- Donation Section -->
+            <section class="bank-section">
+                <h2>❤️ Donate Credits</h2>
+                <p>Help support other learners by donating to the bank.</p>
+                <form method="post" class="donation-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="donate">
+                    <div class="form-inline">
+                        {{ donation_form.amount }}
+                        <button type="submit" class="btn btn-primary">Donate</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Support Section -->
+            <section class="bank-section">
+                <h2>🆘 Request Support</h2>
+                {% if can_request_support and support_amount > 0 %}
+                <p>You're eligible to receive <strong>{{ support_amount }} credits</strong> from the bank.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="support">
+                    <button type="submit" class="btn btn-success">Request Support</button>
+                </form>
+                {% else %}
+                <div class="alert alert-info">
+                    {{ cooldown_message|default:"You're not eligible for support at this time." }}
+                </div>
+                {% endif %}
+
+                <div class="support-rules">
+                    <h3>Support Rules</h3>
+                    <table class="rules-table">
+                        <tr>
+                            <th>Your Credits</th>
+                            <th>Support Amount</th>
+                        </tr>
+                        <tr>
+                            <td>0</td>
+                            <td>6 credits</td>
+                        </tr>
+                        <tr>
+                            <td>1-2</td>
+                            <td>4 credits</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>2 credits</td>
+                        </tr>
+                        <tr>
+                            <td>&gt;3</td>
+                            <td>Not eligible</td>
+                        </tr>
+                    </table>
+                    <p class="rule-note">⏰ Cooldown: 24 hours between requests</p>
+                </div>
+            </section>
+        </div>
+
+        <div class="bank-info">
+            <h2>How the Bank Works</h2>
+            <div class="info-cards">
+                <div class="info-card">
+                    <span class="info-icon">📊</span>
+                    <h3>10% Cut</h3>
+                    <p>The bank takes a 10% cut from all teaching credits to build reserves.</p>
+                </div>
+                <div class="info-card">
+                    <span class="info-icon">🤝</span>
+                    <h3>Community Support</h3>
+                    <p>Users can donate credits voluntarily to help others.</p>
+                </div>
+                <div class="info-card">
+                    <span class="info-icon">💪</span>
+                    <h3>Get Back on Track</h3>
+                    <p>Low on credits? The bank helps you get started again.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>Welcome, {{ user.name }}!</h1>
+            <!-- New Request button removed as per simplified flow -->
+        </div>
+
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <span class="stat-value">{{ user.credits|floatformat:1 }}</span>
+                <span class="stat-label">Credits</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ user.total_sessions }}</span>
+                <span class="stat-label">Sessions</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{% if user.average_rating %}{{ user.average_rating|floatformat:1 }}{% else %}-{% endif %}</span>
+                <span class="stat-label">Rating</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ user.total_reviews }}</span>
+                <span class="stat-label">Reviews</span>
+            </div>
+        </div>
+
+        <div class="dashboard-grid full-width">
+            <!-- My Requests -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2>My Learning Requests</h2>
+                    <a href="{% url 'all_requests' %}" class="btn btn-sm btn-outline">Post New Request</a>
+                </div>
+                {% if my_requests %}
+                <div class="request-list">
+                    {% for req in my_requests %}
+                    <div class="request-card">
+                        <div class="request-info">
+                            <h3 class="request-topic">{{ req.topic_to_learn }}</h3>
+                            {% if req.topic_to_teach %}
+                            <p class="request-exchange">Can teach: {{ req.topic_to_teach }}</p>
+                            {% endif %}
+                            {% if req.ok_with_just_learning %}
+                            <span class="badge-bounty-sm">Bounty</span>
+                            {% endif %}
+                            <span class="request-time">{{ req.created_at|timesince }} ago</span>
+                        </div>
+                        <div class="request-actions">
+                            <a href="{% url 'complete_request' req.id %}" class="btn btn-sm btn-success">Complete</a>
+                            <a href="{% url 'delete_request' req.id %}" class="btn btn-sm btn-outline">Delete</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <p>You haven't created any learning requests yet.</p>
+                    <a href="{% url 'all_requests' %}" class="btn btn-primary">Create Request via Search</a>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Ensure My Requests takes proper width if grid is used */
+    .dashboard-grid.full-width {
+        display: block;
+    }
+
+    .badge-bounty-sm {
+        display: inline-block;
+        background: #fff3e0;
+        color: #e65100;
+        font-size: 0.75rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Details - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+    <div class="container container-sm">
+        <a href="{% url 'all_requests' %}" class="back-link">&larr; Back to requests</a>
+
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="user-profile-mini">
+                    <span class="user-avatar-lg">{{ learning_request.creator.name|slice:":1"|upper }}</span>
+                    <div class="user-info">
+                        <h2>{{ learning_request.creator.name }}</h2>
+                        <div class="user-meta">
+                            {% if learning_request.creator.is_online %}
+                            <span class="status-badge online">Online</span>
+                            {% else %}
+                            <span class="status-badge offline">Offline</span>
+                            {% endif %}
+                            {% if learning_request.creator.average_rating %}
+                            <span class="rating">★ {{ learning_request.creator.average_rating|floatformat:1 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-body">
+                <div class="detail-item">
+                    <span class="detail-label">Wants to learn</span>
+                    <h3 class="detail-value">{{ learning_request.topic_to_learn }}</h3>
+                </div>
+
+                {% if learning_request.topic_to_teach %}
+                <div class="detail-item">
+                    <span class="detail-label">Can teach in exchange</span>
+                    <p class="detail-value">{{ learning_request.topic_to_teach }}</p>
+                </div>
+                {% endif %}
+
+                <div class="detail-item">
+                    <span class="detail-label">Posted</span>
+                    <p class="detail-value">{{ learning_request.created_at|timesince }} ago</p>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                <a href="{% url 'user_profile' learning_request.creator.id %}" class="btn btn-outline">View Profile</a>
+                <a href="{% url 'direct_chat' learning_request.creator.id %}" class="btn btn-outline">Message</a>
+                <a href="{% url 'start_session' learning_request.creator.id %}" class="btn btn-primary">Start
+                    Session</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

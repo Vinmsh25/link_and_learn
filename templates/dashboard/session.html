@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Session with {{ partner.name }} - Link &amp; Learn{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/session.css">
+<style>
+    .video-container {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        background: #000;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .video-box {
+        position: relative;
+        width: 480px;
+        height: 360px;
+        background: #333;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .video-box video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .video-label {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+    .ide-container {
+        height: 500px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    #monaco-editor {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="session-page" data-session-id="{{ session.id }}" data-user-id="{{ user.id }}"
+    data-username="{{ user.name }}" data-started-at="{{ session.created_at|date:'U' }}"
+    data-whiteboard="{{ session.whiteboard_state|escapejs|default:'' }}"
+    data-ide-code="{{ session.ide_code|escapejs|default:'' }}"
+    data-ide-language="{{ session.ide_language|default:'python' }}"
+    data-teaching-seconds="{{ teaching_seconds|default:0 }}" data-timer-start="{{ active_timer_start|default:'null' }}">
+    <div class="session-header">
+        <div class="session-info">
+            <h1>Session with {{ partner.name }}</h1>
+            <div class="session-meta">
+                <span class="session-time" id="sessionDuration">00:00:00</span>
+                {% if session.is_active %}
+                <span class="status-badge active">Active</span>
+                {% endif %}
+            </div>
+        </div>
+        <button class="btn btn-danger" id="endSessionBtn">End Session</button>
+    </div>
+
+    <div class="timer-section">
+        <div class="timer-display">
+            <div class="timer-info">
+                <span class="timer-label">Teaching Timer</span>
+                <span class="timer-value" id="teachingTimer">00:00</span>
+            </div>
+            <div class="timer-controls">
+                <button class="btn btn-success" id="startTimerBtn" {% if is_my_timer_running %}disabled{% endif %}>
+                    Start Teaching
+                </button>
+                <button class="btn btn-warning" id="stopTimerBtn" {% if not is_my_timer_running %}disabled{% endif %}>
+                    Stop
+                </button>
+            </div>
+        </div>
+        <div class="timer-note">
+            <span>5 minutes of teaching = 1 credit | Bank takes 10% cut</span>
+        </div>
+    </div>
+
+    <div class="tools-section">
+        <div class="tools-tabs">
+            <button class="tab-btn active" data-tab="whiteboard">Whiteboard</button>
+            <button class="tab-btn" data-tab="chat">Chat</button>
+            <button class="tab-btn" data-tab="ide">Code Editor</button>
+            <button class="tab-btn" data-tab="video">Video Call</button>
+        </div>
+
+        <div class="tools-content">
+            <div class="tool-panel active" id="whiteboard-panel">
+                <div class="whiteboard-toolbar">
+                    <button class="tool-btn" data-tool="select" title="Select/Move">✋ Select</button>
+                    <button class="tool-btn active" data-tool="pen" title="Pen">✏️ Pen</button>
+                    <button class="tool-btn" data-tool="text" title="Text">T Text</button>
+                    <button class="tool-btn" data-tool="eraser" title="Eraser">🧹 Eraser</button>
+                    <div class="separator">|</div>
+                    <input type="color" id="colorPicker" value="#000000" title="Color">
+                    <input type="range" id="brushSize" min="1" max="50" value="3" title="Brush Size">
+                    <button class="tool-btn btn-danger-text" id="deleteSelected" title="Delete Selected">🗑️
+                        Del</button>
+                    <button class="tool-btn" id="clearCanvas" title="Clear All">💥 Clear All</button>
+                </div>
+                <div class="whiteboard-scroll-container"
+                    style="width: 100%; height: 600px; overflow: auto; border: 1px solid #ddd; position: relative;">
+                    <canvas id="whiteboard" width="3000" height="2000"></canvas>
+                </div>
+            </div>
+
+            <div class="tool-panel" id="chat-panel">
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type a message..." class="form-input">
+                    <button class="btn btn-primary" id="sendMessageBtn">Send</button>
+                </div>
+            </div>
+
+            <div class="tool-panel" id="ide-panel">
+                <div class="ide-layout" style="display: flex; flex-direction: column; gap: 10px; height: 600px;">
+                    <div class="ide-toolbar">
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <select id="languageSelect" class="form-select" style="width: auto;">
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                            </select>
+                            <button class="btn btn-success btn-sm" id="runCodeBtn">Run ▶</button>
+                            <span id="ideStatus" style="font-size: 0.8rem; color: #666; margin-left: auto;">Ready</span>
+                        </div>
+                    </div>
+                    <div class="ide-split" style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                        <div class="ide-editor-container" style="flex: 2; border: 1px solid #ccc;">
+                            <div id="monaco-editor"></div>
+                        </div>
+                        <div class="ide-console"
+                            style="flex: 1; background: #1e1e1e; color: #f0f0f0; padding: 10px; font-family: monospace; overflow: auto; border-radius: 4px;">
+                            <div style="border-bottom: 1px solid #333; margin-bottom: 5px; color: #888;">TERMINAL /
+                                CONSOLE</div>
+                            <pre id="outputConsole"
+                                style="margin: 0; white-space: pre-wrap;">Initializing environment...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-panel" id="video-panel">
+                <div class="video-container">
+                    <div class="video-box">
+                        <video id="localVideo" autoplay muted playsinline></video>
+                        <span class="video-label">You</span>
+                    </div>
+                    <div class="video-box">
+                        <video id="remoteVideo" autoplay playsinline></video>
+                        <span class="video-label">{{ partner.name }}</span>
+                    </div>
+                </div>
+                <div class="video-controls" style="text-align: center; margin-top: 1rem;">
+                    <button class="btn btn-primary" id="startVideoBtn">Start Call</button>
+                    <button class="btn btn-outline" id="toggleMuteBtn" disabled>Mute</button>
+                    <button class="btn btn-outline" id="toggleVideoBtn" disabled>Camera Off</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+<script>
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' } });
+
+    // Read Django data from HTML data attributes (avoids linter issues)
+    var sessionEl = document.querySelector('.session-page');
+    var initialWhiteboard = sessionEl.dataset.whiteboard || '';
+    var initialIdeCode = sessionEl.dataset.ideCode || '';
+    var initialIdeLanguage = sessionEl.dataset.ideLanguage || 'python';
+    var initialTeachingSeconds = parseInt(sessionEl.dataset.teachingSeconds, 10) || 0;
+    var timerStartVal = sessionEl.dataset.timerStart;
+    var initialTimerStart = (timerStartVal && timerStartVal !== 'null') ? parseInt(timerStartVal, 10) : null;
+</script>
+<script src="/static/js/session.js"></script>
+{% endblock %}

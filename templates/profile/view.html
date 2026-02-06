@@ -1,0 +1,91 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}{% if is_own_profile %}My Profile{% else %}{{ profile_user.name }}{% endif %} - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="container">
+        <div class="profile-header">
+            <div class="profile-avatar-lg">
+                {{ profile_user.name|slice:":1"|upper }}
+            </div>
+            <div class="profile-info">
+                <h1>{{ profile_user.name }}</h1>
+                <div class="profile-meta">
+                    {% if profile_user.is_online %}
+                    <span class="status-badge online">Online</span>
+                    {% else %}
+                    <span class="status-badge offline">Offline</span>
+                    {% endif %}
+                    {% if profile_user.average_rating %}
+                    <span class="rating-badge">★ {{ profile_user.average_rating|floatformat:1 }} ({{
+                        profile_user.total_reviews }} reviews)</span>
+                    {% endif %}
+                </div>
+                {% if profile_user.availability %}
+                <p class="availability">📅 {{ profile_user.availability }}</p>
+                {% endif %}
+            </div>
+
+            {% if is_own_profile %}
+            <a href="{% url 'edit_profile' %}" class="btn btn-outline">Edit Profile</a>
+            {% else %}
+            <div class="profile-actions">
+                <a href="{% url 'direct_chat' profile_user.id %}" class="btn btn-outline">Message</a>
+                <a href="{% url 'start_session' profile_user.id %}" class="btn btn-primary">Start Session</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="profile-stats">
+            <div class="stat-card">
+                <span class="stat-value">{{ profile_user.credits|floatformat:1 }}</span>
+                <span class="stat-label">Credits</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ profile_user.total_sessions }}</span>
+                <span class="stat-label">Sessions</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ profile_user.total_reviews }}</span>
+                <span class="stat-label">Reviews</span>
+            </div>
+        </div>
+
+        {% if is_own_profile %}
+        <div class="profile-quick-actions">
+            <a href="{% url 'credit_history' %}" class="btn btn-outline">View Credit History</a>
+            <a href="{% url 'bank' %}" class="btn btn-outline">Visit Bank</a>
+        </div>
+        {% endif %}
+
+        <!-- Reviews Section -->
+        <section class="reviews-section">
+            <h2>Reviews</h2>
+            {% if reviews %}
+            <div class="reviews-list">
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="user-avatar-sm">{{ review.reviewer.name|slice:":1"|upper }}</span>
+                        <div class="review-meta">
+                            <span class="reviewer-name">{{ review.reviewer.name }}</span>
+                            <span class="review-date">{{ review.created_at|timesince }} ago</span>
+                        </div>
+                        <span class="review-rating">★ {{ review.rating }}</span>
+                    </div>
+                    {% if review.comment %}
+                    <p class="review-comment">{{ review.comment }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state-sm">
+                <p>No reviews yet</p>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

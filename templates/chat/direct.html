@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat with {{ other_user.name }} - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="direct-chat-page">
+    <div class="container container-sm">
+        <div class="chat-header">
+            <a href="{% url 'user_profile' other_user.id %}" class="back-link">&larr; Back to profile</a>
+            <div class="chat-user">
+                <span class="user-avatar">{{ other_user.name|slice:":1"|upper }}</span>
+                <div class="user-info">
+                    <h2>{{ other_user.name }}</h2>
+                    {% if other_user.is_online %}
+                    <span class="status-badge online">Online</span>
+                    {% else %}
+                    <span class="status-badge offline">Offline</span>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="{% url 'start_session' other_user.id %}" class="btn btn-primary">Start Session</a>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                {% for msg in messages %}
+                <div class="message {% if msg.sender == user %}sent{% else %}received{% endif %}">
+                    <div class="message-content">{{ msg.content }}</div>
+                    <div class="message-time">{{ msg.created_at|time:"H:i" }}</div>
+                </div>
+                {% empty %}
+                <div class="chat-empty">
+                    <p>No messages yet. Say hello!</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <form class="chat-form" id="chatForm" data-user-id="{{ other_user.id }}">
+                {% csrf_token %}
+                <input type="text" name="content" id="chatInput" placeholder="Type a message..." class="form-input"
+                    autocomplete="off">
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('chatForm');
+        const input = document.getElementById('chatInput');
+        const messagesContainer = document.getElementById('chatMessages');
+        const userId = form.dataset.userId;
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const content = input.value.trim();
+            if (!content) return;
+
+            const formData = new FormData();
+            formData.append('content', content);
+            formData.append('csrfmiddlewaretoken', form.querySelector('[name=csrfmiddlewaretoken]').value);
+
+            try {
+                const response = await fetch(`/chat/direct/${userId}/send/`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    appendMessage(data.message, true);
+                    input.value = '';
+                    scrollToBottom();
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        });
+
+        function appendMessage(msg, isMine) {
+            const div = document.createElement('div');
+            div.className = 'message ' + (isMine ? 'sent' : 'received');
+            div.innerHTML = `
+            <div class="message-content">${msg.content}</div>
+            <div class="message-time">Just now</div>
+        `;
+            messagesContainer.appendChild(div);
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Poll for new messages
+        setInterval(async function () {
+            try {
+                const response = await fetch(`/chat/direct/${userId}/messages/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const currentCount = messagesContainer.querySelectorAll('.message').length;
+                    if (data.messages.length > currentCount) {
+                        // New messages received
+                        location.reload();
+                    }
+                }
+            } catch (error) { }
+        }, 5000);
+
+        scrollToBottom();
+    });
+</script>
+{% endblock %}

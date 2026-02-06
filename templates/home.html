@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Link & Learn - Learn Anything, Teach Anything{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            Learn Anything.<br>
+            <span class="gradient-text">Teach Anything.</span>
+        </h1>
+        <p class="hero-subtitle">
+            Connect with peers, share knowledge, and grow together.
+            Our time-based credit system makes learning fair and accessible.
+        </p>
+        <div class="hero-cta">
+            <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Start Learning</a>
+            <a href="{% url 'login' %}" class="btn btn-outline btn-lg">Sign In</a>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="floating-card card-1">
+            <span class="card-emoji">💡</span>
+            <span>Python Basics</span>
+        </div>
+        <div class="floating-card card-2">
+            <span class="card-emoji">🎨</span>
+            <span>UI Design</span>
+        </div>
+        <div class="floating-card card-3">
+            <span class="card-emoji">📊</span>
+            <span>Data Analysis</span>
+        </div>
+    </div>
+</div>
+
+<section class="features">
+    <div class="container">
+        <h2 class="section-title">How It Works</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Find a Match</h3>
+                <p>Search for topics you want to learn and find peers who can teach you.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>Connect & Learn</h3>
+                <p>Start a session with video, chat, whiteboard, and code editor tools.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <h3>Track Time</h3>
+                <p>Teaching time is tracked automatically. 5 minutes of teaching = 1 credit.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⭐</div>
+                <h3>Rate & Grow</h3>
+                <p>Rate your sessions, build your reputation, and keep learning.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="credit-system">
+    <div class="container">
+        <div class="credit-content">
+            <h2 class="section-title">The Credit Economy</h2>
+            <div class="credit-info">
+                <div class="credit-item">
+                    <span class="credit-number">15</span>
+                    <span class="credit-label">Starting Credits</span>
+                </div>
+                <div class="credit-item">
+                    <span class="credit-number">5 min</span>
+                    <span class="credit-label">= 1 Credit</span>
+                </div>
+                <div class="credit-item">
+                    <span class="credit-number">10%</span>
+                    <span class="credit-label">Bank Cut</span>
+                </div>
+            </div>
+            <p class="credit-description">
+                Earn credits by teaching, spend them to learn. The Bank collects a small cut
+                to support users who run low on credits.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

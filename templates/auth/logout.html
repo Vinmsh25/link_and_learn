@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Logout - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Leaving So Soon?</h1>
+                <p class="auth-subtitle">Let others know when you'll be back</p>
+            </div>
+
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+
+                {% if has_active_posts %}
+                <div class="alert alert-info">
+                    <strong>📚 Active Posts</strong><br>
+                    You have active learning requests. Setting your availability helps others know when to reach you.
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="id_availability" class="form-label">Availability (Optional)</label>
+                    {{ form.availability }}
+                    <span class="form-hint">e.g., "Weekdays 6-9 PM" or "Available on weekends"</span>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Logout</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Request - Link & Learn{% endblock %}
+
+{% block content %}
+<div class="create-page">
+    <div class="container container-sm">
+        <div class="form-card">
+            <div class="form-header">
+                <h1>What do you want to learn?</h1>
+                <p>Create a learning request and find peers who can help you.</p>
+            </div>
+
+            <form method="post" class="main-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_topic_to_learn" class="form-label">I want to learn *</label>
+                    {{ form.topic_to_learn }}
+                    {% if form.topic_to_learn.errors %}
+                    <span class="form-error">{{ form.topic_to_learn.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_topic_to_teach" class="form-label">I can teach in exchange</label>
+                    {{ form.topic_to_teach }}
+                    <span class="form-hint">Optional - offer to teach something in return</span>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    {{ form.ok_with_just_learning }}
+                    <label for="id_ok_with_just_learning" class="checkbox-label">
+                        I'm okay with just learning (will pay credits)
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Post Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
