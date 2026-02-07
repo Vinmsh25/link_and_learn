@@ -18,6 +18,17 @@ A peer-to-peer learning platform with a credit-based economy, enabling users to 
 - **Database**: SQLite (development) / PostgreSQL (production)
 - **Frontend**: Django Templates with JavaScript
 
+##Core Concepts Implemented
+
+- Real-time communication architecture using ASGI & WebSockets
+- Secure session handling and user interaction workflows
+- Credit-based transaction logic for fair knowledge exchange
+- Scalable full-stack system design for collaborative learning
+
+
+
+
+
 ## Quick Start
 
 ### Prerequisites
